@@ -54,7 +54,7 @@ clock c=0.0;
 
 int freq=1000; //the frequency of sending MA before the ack is received is set to 10 seconds
 
-int ma=1000; //the movement authority is set to 1000 meters from the current location
+int ma=500; //the movement authority is set to 1000 meters from the current location
 
 int MaxAttemptsToSendMa=3;
 
@@ -130,7 +130,7 @@ int idT=0;</declaration>
 			<source ref="id3"/>
 			<target ref="id2"/>
 			<label kind="synchronisation" x="-2779" y="-2924">OBU_send_location_to_RBC[id_RBC]?</label>
-			<label kind="assignment" x="-2762" y="-2907">loc=x, idT=y, attempts=0,c=1000</label>
+			<label kind="assignment" x="-2762" y="-2907">loc=x, idT=y, attempts=0,c=freq</label>
 		</transition>
 	</template>
 	<template>
@@ -149,7 +149,7 @@ this automaton is used for injecting probabilistic failures in the system.
 		</location>
 		<location id="id6" x="-187" y="-59">
 			<name x="-212" y="-93">I_Nominal</name>
-			<label kind="exponentialrate" x="-204" y="-51">2</label>
+			<label kind="exponentialrate" x="-212" y="-51">1:4</label>
 			<label kind="comments" x="-408" y="-178">What is the probability of failure? It must be such that THR &lt; 10^-9 ?</label>
 		</location>
 		<branchpoint id="id7" x="-102" y="-59">
@@ -172,7 +172,7 @@ this automaton is used for injecting probabilistic failures in the system.
 		<transition>
 			<source ref="id7"/>
 			<target ref="id6"/>
-			<label kind="probability" x="-102" y="-25">9999</label>
+			<label kind="probability" x="-102" y="-25">9999999</label>
 			<nail x="-102" y="8"/>
 			<nail x="-161" y="8"/>
 		</transition>
@@ -202,7 +202,7 @@ this automaton is used for injecting probabilistic failures in the system.
 		</location>
 		<location id="id11" x="-187" y="-59">
 			<name x="-212" y="-93">I_Nominal</name>
-			<label kind="exponentialrate" x="-204" y="-51">2</label>
+			<label kind="exponentialrate" x="-221" y="-51">1:4</label>
 			<label kind="comments" x="-544" y="-127">What is the probability of failure? It must be such that THR &lt; 10^-9 ?</label>
 		</location>
 		<branchpoint id="id12" x="-102" y="-59">
@@ -225,7 +225,7 @@ this automaton is used for injecting probabilistic failures in the system.
 		<transition>
 			<source ref="id12"/>
 			<target ref="id11"/>
-			<label kind="probability" x="-152" y="8">9999</label>
+			<label kind="probability" x="-152" y="8">9999999</label>
 			<nail x="-102" y="8"/>
 			<nail x="-170" y="8"/>
 		</transition>
@@ -255,7 +255,7 @@ this automaton is used both for injecting probabilistic failures and for fixing 
 		</location>
 		<location id="id16" x="-187" y="-59">
 			<name x="-212" y="-93">I_Nominal</name>
-			<label kind="exponentialrate" x="-204" y="-51">2</label>
+			<label kind="exponentialrate" x="-221" y="-51">1:4</label>
 			<label kind="comments" x="-442" y="-153">What is the probability of failure? It must be such that THR &lt; 10^-9 ?</label>
 		</location>
 		<branchpoint id="id17" x="-102" y="-59">
@@ -285,7 +285,7 @@ this automaton is used both for injecting probabilistic failures and for fixing 
 		<transition>
 			<source ref="id17"/>
 			<target ref="id16"/>
-			<label kind="probability" x="-169" y="8">9999</label>
+			<label kind="probability" x="-169" y="8">9999999</label>
 			<nail x="-102" y="8"/>
 			<nail x="-170" y="8"/>
 		</transition>
@@ -303,7 +303,7 @@ double ma=100.0;
 
 clock c=0.0;
 
-const double freq = 5.0;//5 sec.</declaration>
+const double freq = 5.0; //5 sec.  the frequency in which the location is sent to the RBC</declaration>
 		<location id="id19" x="-10497" y="-10973">
 			<name x="-10540" y="-11007">MAexceededFailureAndLUFailed</name>
 		</location>
@@ -313,6 +313,7 @@ const double freq = 5.0;//5 sec.</declaration>
 		<location id="id21" x="-10931" y="-10735">
 			<name x="-10990" y="-10786">I_WatingLocFromLU</name>
 			<label kind="invariant" x="-10956" y="-10769">c&lt;=freq</label>
+			<label kind="exponentialrate" x="-10956" y="-10803">5</label>
 		</location>
 		<location id="id22" x="-10931" y="-10965">
 			<name x="-10982" y="-10999">LU_Failed</name>
@@ -369,38 +370,38 @@ const double freq = 5.0;//5 sec.</declaration>
 		<transition>
 			<source ref="id21"/>
 			<target ref="id21"/>
-			<label kind="guard" x="-11152" y="-10727">c&gt;=0</label>
-			<label kind="synchronisation" x="-11237" y="-10710">OBU_read_MA[id_T]?</label>
-			<label kind="assignment" x="-11169" y="-10693">ma=x</label>
-			<nail x="-11092" y="-10702"/>
-			<nail x="-11092" y="-10659"/>
+			<label kind="guard" x="-11050" y="-10744">c&gt;=0</label>
+			<label kind="synchronisation" x="-11135" y="-10727">OBU_read_MA[id_T]?</label>
+			<label kind="assignment" x="-11067" y="-10710">ma=x</label>
+			<nail x="-10990" y="-10719"/>
+			<nail x="-10990" y="-10676"/>
 		</transition>
 		<transition>
 			<source ref="id21"/>
 			<target ref="id21"/>
-			<label kind="guard" x="-10770" y="-10659">c==freq</label>
-			<label kind="synchronisation" x="-10770" y="-10642">OBU_send_location_to_RBC[id_T]!</label>
-			<label kind="assignment" x="-10769" y="-10625">x=loc, c=0.0, y=id_T</label>
-			<nail x="-10778" y="-10651"/>
-			<nail x="-10778" y="-10625"/>
+			<label kind="guard" x="-10855" y="-10701">c==freq</label>
+			<label kind="synchronisation" x="-10855" y="-10684">OBU_send_location_to_RBC[id_T]!</label>
+			<label kind="assignment" x="-10854" y="-10667">x=loc, c=0.0, y=id_T</label>
+			<nail x="-10863" y="-10693"/>
+			<nail x="-10863" y="-10667"/>
 		</transition>
 		<transition>
 			<source ref="id21"/>
 			<target ref="id21"/>
-			<label kind="guard" x="-10948" y="-10608">c&gt;=0</label>
-			<label kind="synchronisation" x="-11007" y="-10591">LU_send_location[id_T]?</label>
-			<label kind="assignment" x="-10956" y="-10574">loc = x</label>
-			<nail x="-10948" y="-10607"/>
-			<nail x="-10914" y="-10607"/>
+			<label kind="guard" x="-10948" y="-10643">c&gt;=0</label>
+			<label kind="synchronisation" x="-11007" y="-10626">LU_send_location[id_T]?</label>
+			<label kind="assignment" x="-10956" y="-10609">loc = x</label>
+			<nail x="-10948" y="-10642"/>
+			<nail x="-10914" y="-10642"/>
 		</transition>
 		<transition>
 			<source ref="id22"/>
 			<target ref="id21"/>
-			<label kind="guard" x="-11101" y="-10863">c&gt;=0</label>
-			<label kind="synchronisation" x="-11160" y="-10846">LU_reset[id_T]?</label>
-			<label kind="assignment" x="-11135" y="-10829">c=freq,ma=0</label>
-			<nail x="-11041" y="-10965"/>
-			<nail x="-11041" y="-10794"/>
+			<label kind="guard" x="-11067" y="-10838">c&gt;=0</label>
+			<label kind="synchronisation" x="-11126" y="-10821">LU_reset[id_T]?</label>
+			<label kind="assignment" x="-11101" y="-10804">c=freq,ma=0</label>
+			<nail x="-11007" y="-10948"/>
+			<nail x="-11007" y="-10769"/>
 		</transition>
 		<transition>
 			<source ref="id21"/>
@@ -414,7 +415,9 @@ const double freq = 5.0;//5 sec.</declaration>
 		<declaration>double ma=0.0;
 clock c=0.0;
 
-const int OBU_out_timer=10; //seconds</declaration>
+const int OBU_out_timer= 10; //timeout to reception of MA
+
+</declaration>
 		<location id="id23" x="34" y="-246">
 			<name x="-42" y="-280">FailWhileSendACKtoRBC</name>
 		</location>
@@ -590,7 +593,7 @@ double location=0.0;</declaration>
 		<parameter>const int id_T</parameter>
 		<declaration>// Place local declarations here.
 
-const double freq = 0.5;   //0.5 sec
+const double freq = 0.5;   //0.5 sec frequency in which a new location is required to LU
 clock c = 0.0;</declaration>
 		<location id="id35" x="-1988" y="-2065">
 			<name x="-1998" y="-2099">Brake</name>
@@ -847,6 +850,12 @@ system
 		<query>
 			<formula>simulate 1  [&lt;=5000] { TRAIN_ATO.speed}
 			</formula>
+			<comment>change loc+ma to 250000 in RBC_MAIN to see the braking
+			</comment>
+		</query>
+		<query>
+			<formula>simulate 50  [&lt;=1000] { (OBU_MAIN_SendLocationToRBC.I_WatingLocFromLU)  &amp;&amp; OBU_MAIN_SendLocationToRBC.loc &gt;= OBU_MAIN_SendLocationToRBC.ma}
+			</formula>
 			<comment>
 			</comment>
 		</query>
@@ -857,15 +866,46 @@ system
 			</comment>
 		</query>
 		<query>
-			<formula>Pr[&lt;=1000](&lt;&gt;OBU_MAIN_ReceiveMA.TimeOutFail &amp;&amp; (OBU_MAIN_ReceiveMA.c&gt;OBU_MAIN_ReceiveMA.OBU_out_timer))
+			<formula>simulate 1  [&lt;=500] {OBU_MAIN_SendLocationToRBC.I_WatingLocFromLU &amp;&amp; OBU_MAIN_SendLocationToRBC.loc &gt; OBU_MAIN_SendLocationToRBC.ma}
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>Pr[&lt;=500](&lt;&gt;OBU_MAIN_ReceiveMA.TimeOutFail &amp;&amp; (OBU_MAIN_ReceiveMA.c&gt;OBU_MAIN_ReceiveMA.OBU_out_timer))
 			</formula>
 			<comment>The probability that the failure state is reached due to the timeout in receiving movement authority
 			</comment>
 		</query>
 		<query>
-			<formula>Pr[&lt;=1000](&lt;&gt;(OBU_MAIN_SendLocationToRBC.MAexceededFailure || OBU_MAIN_SendLocationToRBC.MAexceededFailureAndLUFailed)  &amp;&amp; OBU_MAIN_SendLocationToRBC.loc &gt;= OBU_MAIN_SendLocationToRBC.ma)
+			<formula>Pr(&lt;&gt;[0,10] ([][0,1]OBU_MAIN_SendLocationToRBC.I_WatingLocFromLU &amp;&amp; OBU_MAIN_SendLocationToRBC.loc &gt; OBU_MAIN_SendLocationToRBC.ma))
 			</formula>
-			<comment>The probability that the failure state is reached due to the position of the train that exceeded the movement authority
+			<comment>(252 runs) Pr(&lt;&gt; ...) in [0.759819,0.859624]
+with confidence 0.95.
+			</comment>
+		</query>
+		<query>
+			<formula>Pr[&lt;=1000](&lt;&gt;OBU_MAIN_ReceiveMA.TimeOutFail)
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>Pr[&lt;=1000](&lt;&gt; OBU_MAIN_SendLocationToRBC.MAexceededFailure) &gt;= 0.00998576
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>Pr[&lt;=1000](&lt;&gt; OBU_MAIN_SendLocationToRBC.MAexceededFailure)
+			</formula>
+			<comment>(597 runs) Pr(&lt;&gt; ...) in [0,0.00998576]
+with confidence 0.995.
+
+Pr[&lt;=1000](&lt;&gt; OBU_MAIN_SendLocationToRBC.MAexceededFailure)
+Verification/kernel/elapsed time used: 456.5s / 0.625s / 471.182s.
+Resident/virtual memory usage peaks: 8,624KB / 28,960KB.
+Property is satisfied.
 			</comment>
 		</query>
 	</queries>
