@@ -1,5 +1,5 @@
 # ASTRail
-This repository contains models for the ASTRail project (http://www.astrail.eu/) created with Uppaal SMC version 4 (http://www.uppaal.org/)
+This repository contains models for the ASTRail project (http://www.astrail.eu/) created with Uppaal SMC version 4.1.19 (http://www.uppaal.org/)
 
 References:
 
