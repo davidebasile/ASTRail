@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>const int nTrain=3;
+
+
+
+const double rateOBU=0.5;
+const int freqOBU=1;
+
+const int OBU_out_timer= 30; //timeout to reception of MA
+
+// constants for identifying who caused the failure
+const int SENDLOC=1;
+const int RECEIVEMA=2;
+int whofailed=0;
+
+// channels
+broadcast chan LU_send_location[nTrain];        //LU --&gt; OBU_SendLoc
+broadcast chan OBU_send_location_to_RBC[nTrain];//OBU_Send_Loc --&gt; RBC
+broadcast chan OBU_rec_MA[nTrain];              //RBC --&gt; OBU_ReceiveMA, OBU_SendLoc, LU
+broadcast chan OBU_send_MA_ack[nTrain];         //OBU_ReceiveMA --&gt; RBC
+broadcast chan OBU_fail[nTrain];                //OBU_SendLoc, OBU_ReceiveMA --&gt; OBU_SendLoc, OBU_ReceiveMA, LU
+
+//buffers for value passing
+double x=0.0;
+int y=0;
+double z=0.0;
+
+//shared by RBC
+double loc[nTrain];
+
+</declaration>
+	<template>
+		<name>RBC_Main_T</name>
+		<parameter>const int id_RBC, const int id_Train</parameter>
+		<declaration>
+
+clock c=0.0;
+
+const int freq=1; //the frequency of sending MA before the ack is received is set to 1 seconds
+
+const int MaxAttemptsToSendMa=3;
+
+const int maIfNoTrainAhead = 6000;
+int attempts=3;
+
+double ma;
+
+double computeMA(){
+   int i;
+   double val=0.0;
+   for(i=0;i&lt;nTrain;i++){
+      if (i!=id_Train &amp;&amp; loc[i]&gt;loc[id_Train] &amp;&amp; (val==0||loc[i]&lt;val))
+        val=loc[i];
+   }
+   if (val&gt;0.0)
+        return val;
+   else
+        return loc[id_Train]+maIfNoTrainAhead;
+}
+</declaration>
+		<location id="id0" x="-2448" y="-2907">
+			<name x="-2474" y="-2941">SendingMA</name>
+			<label kind="invariant" x="-2414" y="-3034">attempts &lt;= MaxAttemptsToSendMa &amp;&amp; 
+loc[id_Train]&lt;=computeMA() &amp;&amp; 
+forall (id:int[0,nTrain-1]) (loc[id]&lt;=loc[id_Train] || 
+(loc[id]&gt;=computeMA() &amp;&amp; 
+exists (id1:int[0,nTrain-1]) computeMA()==loc[id1]))</label>
+			<label kind="exponentialrate" x="-2448" y="-2898">1:2</label>
+		</location>
+		<location id="id1" x="-2890" y="-2907">
+			<name x="-2924" y="-2941">I_WaitingLoc</name>
+		</location>
+		<init ref="id1"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-2694" y="-3051">OBU_send_location_to_RBC[id_Train]?</label>
+			<label kind="assignment" x="-2703" y="-3026">loc[id_Train]=z, c=freq, z=0.0, attempts=0</label>
+			<nail x="-2448" y="-3000"/>
+			<nail x="-2499" y="-3000"/>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-2736" y="-2822">OBU_send_MA_ack[id_RBC]?</label>
+			<label kind="assignment" x="-2838" y="-2805">attempts=0</label>
+			<nail x="-2448" y="-2805"/>
+			<nail x="-2856" y="-2805"/>
+			<nail x="-2890" y="-2847"/>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-2736" y="-2864">attempts&gt;=MaxAttemptsToSendMa</label>
+			<label kind="assignment" x="-2737" y="-2847">attempts=0</label>
+			<nail x="-2473" y="-2847"/>
+			<nail x="-2865" y="-2847"/>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-2397" y="-2915">c&gt;=freq &amp;&amp; attempts &lt; MaxAttemptsToSendMa</label>
+			<label kind="synchronisation" x="-2397" y="-2898">OBU_rec_MA[id_Train]!</label>
+			<label kind="assignment" x="-2397" y="-2881">c=0,x=computeMA(),attempts=attempts+1</label>
+			<nail x="-2397" y="-2907"/>
+			<nail x="-2397" y="-2873"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-2813" y="-2924">OBU_send_location_to_RBC[id_Train]?</label>
+			<label kind="assignment" x="-2813" y="-2907">loc[id_Train]=z,  c=freq, z=0.0</label>
+		</transition>
+	</template>
+	<template>
+		<name>OBU_MAIN_SendLocationToRBC_T</name>
+		<parameter>const int id_T</parameter>
+		<declaration>bool boot=true;
+
+double lastlocsent=0.0;
+double loc=0.0;
+double ma=0.0;  
+clock c=0.0;
+
+bool newloctosend=false;
+</declaration>
+		<location id="id2" x="-10931" y="-10863">
+			<name x="-10948" y="-10897">Failure</name>
+		</location>
+		<location id="id3" x="-10931" y="-10735">
+			<name x="-10999" y="-10786">WatingLocFromLU</name>
+			<label kind="invariant" x="-10999" y="-10769">(ma&gt;=0 &amp;&amp; loc&lt;ma) || boot</label>
+			<label kind="exponentialrate" x="-10914" y="-10752">rateOBU</label>
+		</location>
+		<location id="id4" x="-10897" y="-10650">
+			<name x="-10907" y="-10684">Init</name>
+			<committed/>
+		</location>
+		<location id="id5" x="-11177" y="-10735">
+			<committed/>
+		</location>
+		<location id="id6" x="-10931" y="-10574">
+			<committed/>
+		</location>
+		<init ref="id4"/>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-10803" y="-10735">c&gt;=freqOBU &amp;&amp; newloctosend</label>
+			<label kind="synchronisation" x="-10803" y="-10718">OBU_send_location_to_RBC[id_T]!</label>
+			<label kind="assignment" x="-10803" y="-10701">z=loc,c=0.0,
+lastlocsent=loc,
+newloctosend=false</label>
+			<nail x="-10803" y="-10735"/>
+			<nail x="-10803" y="-10684"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-11330" y="-10795">OBU_fail[id_T]?</label>
+			<label kind="assignment" x="-11322" y="-10778">loc=0, ma=0</label>
+			<nail x="-11228" y="-10735"/>
+			<nail x="-11228" y="-10863"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-10803" y="-10591">OBU_fail[id_T]?</label>
+			<label kind="assignment" x="-10795" y="-10574">loc=0, ma=0</label>
+			<nail x="-10701" y="-10574"/>
+			<nail x="-10701" y="-10863"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-11058" y="-10642">loc&lt;ma || boot</label>
+			<nail x="-10965" y="-10616"/>
+			<nail x="-10965" y="-10676"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-10931" y="-10633">LU_send_location[id_T]?</label>
+			<label kind="assignment" x="-10931" y="-10616">loc=z,z=0.0, newloctosend=true</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-11322" y="-10608">(loc&gt;=ma || ma&lt;0) &amp;&amp; !boot</label>
+			<label kind="synchronisation" x="-11322" y="-10591">OBU_fail[id_T]!</label>
+			<label kind="assignment" x="-11322" y="-10574">whofailed=SENDLOC, 
+loc=0,ma=0</label>
+			<nail x="-11339" y="-10574"/>
+			<nail x="-11339" y="-10863"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-11160" y="-10693">loc&lt;ma &amp;&amp; ma&gt;=0</label>
+			<label kind="assignment" x="-11159" y="-10676">boot=false</label>
+			<nail x="-11177" y="-10676"/>
+			<nail x="-11058" y="-10676"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-11152" y="-10897">(loc&gt;=ma || ma&lt;0) &amp;&amp; !boot</label>
+			<label kind="synchronisation" x="-11159" y="-10880">OBU_fail[id_T]!</label>
+			<label kind="assignment" x="-11203" y="-10863">whofailed=SENDLOC, loc=0, ma=0</label>
+			<nail x="-11177" y="-10863"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-11159" y="-10756">OBU_rec_MA[id_T]?</label>
+			<label kind="assignment" x="-11159" y="-10739">ma=x</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id3"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-10854" y="-10846">OBU_fail[id_T]?</label>
+			<nail x="-10854" y="-10735"/>
+			<nail x="-10854" y="-10863"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-11058" y="-10846">(loc&gt;=ma || ma&lt;0) &amp;&amp; !boot</label>
+			<label kind="synchronisation" x="-11033" y="-10829">OBU_fail[id_T]!</label>
+			<label kind="assignment" x="-11152" y="-10812">whofailed=SENDLOC, loc=0, ma=0</label>
+		</transition>
+	</template>
+	<template>
+		<name>OBU_MAIN_ReceiveMA_T</name>
+		<parameter>const int id_T</parameter>
+		<declaration>
+
+double ma=0.0;
+clock c=0.0;
+
+bool sendack=false;
+
+//c&gt;=OBU_out_timer
+
+</declaration>
+		<location id="id7" x="-340" y="-238">
+			<name x="-382" y="-272">Failure</name>
+		</location>
+		<location id="id8" x="-340" y="-85">
+			<name x="-408" y="-119">I_WaitingMAfromRBC</name>
+			<label kind="invariant" x="-391" y="-136">c&lt;=OBU_out_timer</label>
+			<label kind="exponentialrate" x="-348" y="-68">rateOBU</label>
+		</location>
+		<init ref="id8"/>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id8"/>
+			<label kind="synchronisation" x="-255" y="-94">OBU_rec_MA[id_T]?</label>
+			<label kind="assignment" x="-255" y="-77">sendack=true,c=0</label>
+			<nail x="-263" y="-94"/>
+			<nail x="-263" y="-51"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-561" y="-204">c==OBU_out_timer</label>
+			<label kind="synchronisation" x="-535" y="-187">OBU_fail[id_T]!</label>
+			<label kind="assignment" x="-586" y="-170">whofailed=RECEIVEMA</label>
+			<nail x="-433" y="-85"/>
+			<nail x="-433" y="-238"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-365" y="-25">sendack</label>
+			<label kind="synchronisation" x="-365" y="-8">OBU_send_MA_ack[id_T]!</label>
+			<label kind="assignment" x="-365" y="8">sendack=false</label>
+			<nail x="-306" y="-25"/>
+			<nail x="-357" y="-25"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-340" y="-212">OBU_fail[id_T]?</label>
+		</transition>
+	</template>
+	<template>
+		<name>LU_MAIN_T</name>
+		<parameter>const int id_T, const double startloc, const double stoploc, const double start_speed, const double average_speed</parameter>
+		<declaration>
+const double freq = 0.5;   //0.5 sec frequency in which a new location is required to LU
+clock c = 0.0;
+
+//---- data retrieved from http://www.railway-technical.com/books-papers--articles/high-speed-railway-capacity.pdf ----//
+
+
+//const double average_speed =  100.0; // m/s ~ 300 km/h
+ //average acceleration 0.3 m/s^2
+
+const double distance_to_break = 5000.0; //at headway&lt;5000 meters the train decelerates! 
+
+/*
+https://www.maglev.net/worlds-fastest-high-speed-trains-in-commercial-operation
+* it can accelerate from 0 to 300 km/h in 316 seconds *
+
+https://www.hindawi.com/journals/mpe/2020/3872852/     (Figure 8)
+* it needs ~100 seconds to stop from ~300 km/h speed*,  braking distance is ~5000 meters *
+
+Figure 8 shows the identification curve of train braking speed by online EM and the calculation curve of braking displacement. 
+It takes 94.2 seconds from normal operation to stop, and the braking distance is 4647.16 meters, which meets the national standard.
+
+https://www.quora.com/How-long-does-it-take-for-a-train-to-come-to-a-complete-emergency-stop
+320km/h 1700m    decelerate at  1.2m/s/s
+*/
+
+//---------------------------------------------------------------------------------------------------------------------//
+
+clock speed= 2.0; // m/s 
+double ma= 2.0;
+clock space=0.0;  //m
+
+double computeAcceleration()
+{
+    //these values have been instantiated empirically
+   // const int deceleration_constant = 3500;
+    const int acceleration_constant = 95;
+
+    double headway = ma - space; 
+    bool stop = space+0.0&gt;=stoploc;
+
+    if ((speed+0.0)&lt;=1.0) {
+           if ((headway&lt;distance_to_break)|| stop) return 0.0;  //stop decelerating otherwise negative speed!
+           else  return 30;
+    }
+    else if ((headway&lt;distance_to_break)|| stop ) return -1.32*1/log(speed); //-0.83 -1.2 emergency stop
+
+//(-deceleration_constant)/(speed*speed);
+    else return ((average_speed-speed)/acceleration_constant);
+}
+
+void initialise(){
+    space=startloc;
+    speed=start_speed;
+ //   loc[id_T]=startloc;
+}
+
+/**  
+    ___    _____ ______ ____   ___     ____ __ 
+   /   |  / ___//_  __// __ \ /   |   /  _// / 
+  / /| |  \__ \  / /  / /_/ // /| |   / / / /  
+ / ___ | ___/ / / /  / _, _// ___ | _/ / / /___
+/_/  |_|/____/ /_/  /_/ |_|/_/  |_|/___//_____/
+
+__________   _______________________________________^__
+ ___   ___ |||  ___   ___   ___    ___ ___  |   __  ,----\
+|   | |   |||| |   | |   | |   |  |   |   | |  |  | |_____\
+|___| |___|||| |___| |___| |___|  | O | O | |  |  |        \
+           |||                    |___|___| |  |__|         )
+___________|||______________________________|______________/
+
+*/</declaration>
+		<location id="id9" x="-221" y="-280">
+			<name x="-263" y="-306">I_GO</name>
+			<label kind="invariant" x="-297" y="-365">speed&gt;=0 &amp;&amp; ma&gt;=0 &amp;&amp;
+speed'==computeAcceleration() &amp;&amp;
+space'==speed &amp;&amp; c&lt;=freq</label>
+		</location>
+		<location id="id10" x="-221" y="-170">
+			<name x="-272" y="-195">Failure</name>
+			<label kind="invariant" x="-272" y="-229">space' == 0 &amp;&amp;
+speed' == 0</label>
+		</location>
+		<location id="id11" x="-357" y="-280">
+			<name x="-367" y="-314">Init</name>
+			<committed/>
+		</location>
+		<init ref="id11"/>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id9"/>
+			<label kind="guard" x="-136" y="-289">c==freq</label>
+			<label kind="synchronisation" x="-136" y="-272">LU_send_location[id_T]!</label>
+			<label kind="assignment" x="-136" y="-255">z=space, c=0</label>
+			<nail x="-136" y="-280"/>
+			<nail x="-136" y="-238"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id9"/>
+			<label kind="assignment" x="-340" y="-297">initialise()</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id9"/>
+			<label kind="synchronisation" x="-297" y="-416">OBU_rec_MA[id_T]?</label>
+			<label kind="assignment" x="-238" y="-399">ma=x</label>
+			<nail x="-247" y="-374"/>
+			<nail x="-187" y="-374"/>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-323" y="-246">OBU_fail[id_T]?</label>
+		</transition>
+	</template>
+	<system>//TRAINs
+
+//TRAIN 1
+OBU_MAIN_SendLocationToRBC1 = OBU_MAIN_SendLocationToRBC_T(0);
+OBU_MAIN_ReceiveMA1 = OBU_MAIN_ReceiveMA_T(0);
+LU_MAIN1  = LU_MAIN_T(0,0.0,0.0,84.0,84.0);
+
+
+//RBCs
+RBC_MAIN1 = RBC_Main_T(0,0);
+
+system 
+    LU_MAIN1,  
+	OBU_MAIN_SendLocationToRBC1,
+	OBU_MAIN_ReceiveMA1,
+	RBC_MAIN1;</system>
+	<queries>
+		<query>
+			<formula>simulate [&lt;=120;1] { LU_MAIN1.speed }
+			</formula>
+			<comment>It takes 94.2 seconds from normal operation to stop, and the braking distance is 4647.16 meters, which meets the national standard.</comment>
+		</query>
+		<query>
+			<formula>simulate [&lt;=120;1] { LU_MAIN1.space }</formula>
+			<comment>It takes 94.2 seconds from normal operation to stop, and the braking distance is 4647.16 meters, which meets the national standard.</comment>
+		</query>
+	</queries>
+</nta>
