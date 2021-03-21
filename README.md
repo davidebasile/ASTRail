@@ -5,6 +5,9 @@ The models and analyses have been published in Isola2018 and FMICS2019.
 References:
 
 https://dl.acm.org/doi/10.1145/3377811.3380373                    (ICSE2020)
+
 https://link.springer.com/chapter/10.1007%2F978-3-030-27008-7_1   (FMICS2019)
+
 https://link.springer.com/chapter/10.1007%2F978-3-030-03421-4_24  (ISOLA2018)
+
 https://link.springer.com/chapter/10.1007%2F978-3-319-98938-9_2   (IFM2018)
