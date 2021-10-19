@@ -152,114 +152,96 @@ bool newloctosend=false;
 
 double rateOBU=0.5;
 int freqOBU=1;</declaration>
-		<location id="id3" x="-10931" y="-10863">
-			<name x="-10948" y="-10897">Failure</name>
+		<location id="id3" x="-10676" y="-10778">
+			<name x="-10693" y="-10812">Failure</name>
 		</location>
-		<location id="id4" x="-10931" y="-10735">
-			<name x="-10999" y="-10786">WatingLocFromLU</name>
-			<label kind="invariant" x="-10999" y="-10769">(ma&gt;=0 &amp;&amp; loc&lt;ma) || boot</label>
-			<label kind="exponentialrate" x="-10914" y="-10752">rateOBU</label>
+		<location id="id4" x="-10676" y="-10650">
+			<name x="-10744" y="-10701">WatingLocFromLU</name>
+			<label kind="invariant" x="-10744" y="-10684">(ma&gt;=0 &amp;&amp; loc&lt;ma) || boot</label>
+			<label kind="exponentialrate" x="-10659" y="-10667">rateOBU</label>
 		</location>
-		<location id="id5" x="-10897" y="-10650">
-			<name x="-10907" y="-10684">Init</name>
+		<location id="id5" x="-10922" y="-10650">
 			<committed/>
 		</location>
-		<location id="id6" x="-11177" y="-10735">
+		<location id="id6" x="-10676" y="-10489">
 			<committed/>
 		</location>
-		<location id="id7" x="-10931" y="-10574">
-			<committed/>
-		</location>
-		<init ref="id5"/>
+		<init ref="id4"/>
 		<transition>
 			<source ref="id4"/>
 			<target ref="id4"/>
-			<label kind="guard" x="-10803" y="-10735">c&gt;=freqOBU &amp;&amp; newloctosend</label>
-			<label kind="synchronisation" x="-10803" y="-10718">OBU_send_location_to_RBC[id_T]!</label>
-			<label kind="assignment" x="-10803" y="-10701">z=loc,c=0.0,
+			<label kind="guard" x="-10548" y="-10650">c&gt;=freqOBU &amp;&amp; newloctosend</label>
+			<label kind="synchronisation" x="-10548" y="-10633">OBU_send_location_to_RBC[id_T]!</label>
+			<label kind="assignment" x="-10548" y="-10616">z=loc,c=0.0,
 lastlocsent=loc,
 newloctosend=false</label>
-			<nail x="-10803" y="-10735"/>
-			<nail x="-10803" y="-10684"/>
+			<nail x="-10548" y="-10650"/>
+			<nail x="-10548" y="-10599"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="-11075" y="-10710">OBU_fail[id_T]?</label>
+			<label kind="assignment" x="-11067" y="-10693">loc=0, ma=0</label>
+			<nail x="-10973" y="-10650"/>
+			<nail x="-10973" y="-10778"/>
 		</transition>
 		<transition>
 			<source ref="id6"/>
 			<target ref="id3"/>
-			<label kind="synchronisation" x="-11330" y="-10795">OBU_fail[id_T]?</label>
-			<label kind="assignment" x="-11322" y="-10778">loc=0, ma=0</label>
-			<nail x="-11228" y="-10735"/>
-			<nail x="-11228" y="-10863"/>
-		</transition>
-		<transition>
-			<source ref="id7"/>
-			<target ref="id3"/>
-			<label kind="synchronisation" x="-10803" y="-10591">OBU_fail[id_T]?</label>
-			<label kind="assignment" x="-10795" y="-10574">loc=0, ma=0</label>
-			<nail x="-10701" y="-10574"/>
-			<nail x="-10701" y="-10863"/>
-		</transition>
-		<transition>
-			<source ref="id7"/>
-			<target ref="id4"/>
-			<label kind="guard" x="-11058" y="-10642">loc&lt;ma || boot</label>
-			<nail x="-10965" y="-10616"/>
-			<nail x="-10965" y="-10676"/>
-		</transition>
-		<transition>
-			<source ref="id4"/>
-			<target ref="id7"/>
-			<label kind="synchronisation" x="-10931" y="-10633">LU_send_location[id_T]?</label>
-			<label kind="assignment" x="-10931" y="-10616">loc=z,z=0.0, newloctosend=true</label>
-		</transition>
-		<transition>
-			<source ref="id7"/>
-			<target ref="id3"/>
-			<label kind="guard" x="-11322" y="-10608">(loc&gt;=ma || ma&lt;0) &amp;&amp; !boot</label>
-			<label kind="synchronisation" x="-11322" y="-10591">OBU_fail[id_T]!</label>
-			<label kind="assignment" x="-11322" y="-10574">whofailed=SENDLOC, 
-loc=0,ma=0</label>
-			<nail x="-11339" y="-10574"/>
-			<nail x="-11339" y="-10863"/>
+			<label kind="synchronisation" x="-10548" y="-10506">OBU_fail[id_T]?</label>
+			<label kind="assignment" x="-10540" y="-10489">loc=0, ma=0</label>
+			<nail x="-10446" y="-10489"/>
+			<nail x="-10446" y="-10778"/>
 		</transition>
 		<transition>
 			<source ref="id6"/>
 			<target ref="id4"/>
-			<label kind="guard" x="-11160" y="-10693">loc&lt;ma &amp;&amp; ma&gt;=0</label>
-			<label kind="assignment" x="-11159" y="-10676">boot=false</label>
-			<nail x="-11177" y="-10676"/>
-			<nail x="-11058" y="-10676"/>
-		</transition>
-		<transition>
-			<source ref="id6"/>
-			<target ref="id3"/>
-			<label kind="guard" x="-11152" y="-10897">(loc&gt;=ma || ma&lt;0) &amp;&amp; !boot</label>
-			<label kind="synchronisation" x="-11159" y="-10880">OBU_fail[id_T]!</label>
-			<label kind="assignment" x="-11203" y="-10863">whofailed=SENDLOC, loc=0, ma=0</label>
-			<nail x="-11177" y="-10863"/>
+			<label kind="guard" x="-10803" y="-10557">loc&lt;ma || boot</label>
+			<nail x="-10710" y="-10531"/>
+			<nail x="-10710" y="-10591"/>
 		</transition>
 		<transition>
 			<source ref="id4"/>
 			<target ref="id6"/>
-			<label kind="synchronisation" x="-11159" y="-10756">OBU_rec_MA[id_T]?</label>
-			<label kind="assignment" x="-11159" y="-10739">ma=x</label>
+			<label kind="synchronisation" x="-10676" y="-10548">LU_send_location[id_T]?</label>
+			<label kind="assignment" x="-10676" y="-10531">loc=z,z=0.0, newloctosend=true</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-11067" y="-10523">(loc&gt;=ma || ma&lt;0) &amp;&amp; !boot</label>
+			<label kind="synchronisation" x="-11067" y="-10506">OBU_fail[id_T]!</label>
+			<label kind="assignment" x="-11067" y="-10489">whofailed=SENDLOC, 
+loc=0,ma=0</label>
+			<nail x="-11084" y="-10489"/>
+			<nail x="-11084" y="-10778"/>
 		</transition>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id4"/>
+			<label kind="guard" x="-10905" y="-10608">loc&lt;ma &amp;&amp; ma&gt;=0</label>
+			<nail x="-10922" y="-10591"/>
+			<nail x="-10803" y="-10591"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-10897" y="-10812">(loc&gt;=ma || ma&lt;0) &amp;&amp; !boot</label>
+			<label kind="synchronisation" x="-10904" y="-10795">OBU_fail[id_T]!</label>
+			<label kind="assignment" x="-10948" y="-10778">whofailed=SENDLOC, loc=0, ma=0</label>
+			<nail x="-10922" y="-10778"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-10904" y="-10671">OBU_rec_MA[id_T]?</label>
+			<label kind="assignment" x="-10904" y="-10654">ma=x, boot=false</label>
 		</transition>
 		<transition>
 			<source ref="id4"/>
 			<target ref="id3"/>
-			<label kind="synchronisation" x="-10854" y="-10846">OBU_fail[id_T]?</label>
-			<nail x="-10854" y="-10735"/>
-			<nail x="-10854" y="-10863"/>
-		</transition>
-		<transition>
-			<source ref="id4"/>
-			<target ref="id3"/>
-			<label kind="guard" x="-11058" y="-10846">(loc&gt;=ma || ma&lt;0) &amp;&amp; !boot</label>
-			<label kind="synchronisation" x="-11033" y="-10829">OBU_fail[id_T]!</label>
-			<label kind="assignment" x="-11152" y="-10812">whofailed=SENDLOC, loc=0, ma=0</label>
+			<label kind="synchronisation" x="-10676" y="-10743">OBU_fail[id_T]?</label>
 		</transition>
 	</template>
 	<template>
@@ -273,26 +255,26 @@ bool sendack=false;
 
 
 </declaration>
-		<location id="id8" x="-340" y="-238">
+		<location id="id7" x="-340" y="-238">
 			<name x="-382" y="-272">Failure</name>
 		</location>
-		<location id="id9" x="-340" y="-85">
+		<location id="id8" x="-340" y="-85">
 			<name x="-408" y="-119">I_WaitingMAfromRBC</name>
 			<label kind="invariant" x="-391" y="-136">c&lt;=OBU_out_timer</label>
 			<label kind="exponentialrate" x="-365" y="-68">rateOBU</label>
 		</location>
-		<init ref="id9"/>
+		<init ref="id8"/>
 		<transition>
-			<source ref="id9"/>
-			<target ref="id9"/>
+			<source ref="id8"/>
+			<target ref="id8"/>
 			<label kind="synchronisation" x="-255" y="-94">OBU_rec_MA[id_T]?</label>
 			<label kind="assignment" x="-255" y="-77">sendack=true,c=0</label>
 			<nail x="-263" y="-94"/>
 			<nail x="-263" y="-76"/>
 		</transition>
 		<transition>
-			<source ref="id9"/>
-			<target ref="id8"/>
+			<source ref="id8"/>
+			<target ref="id7"/>
 			<label kind="guard" x="-561" y="-204">c==OBU_out_timer</label>
 			<label kind="synchronisation" x="-535" y="-187">OBU_fail[id_T]!</label>
 			<label kind="assignment" x="-586" y="-170">whofailed=RECEIVEMA</label>
@@ -300,8 +282,8 @@ bool sendack=false;
 			<nail x="-433" y="-238"/>
 		</transition>
 		<transition>
-			<source ref="id9"/>
-			<target ref="id9"/>
+			<source ref="id8"/>
+			<target ref="id8"/>
 			<label kind="guard" x="-365" y="-25">sendack</label>
 			<label kind="synchronisation" x="-365" y="-8">OBU_send_MA_ack[id_T]!</label>
 			<label kind="assignment" x="-365" y="8">sendack=false</label>
@@ -309,8 +291,8 @@ bool sendack=false;
 			<nail x="-357" y="-25"/>
 		</transition>
 		<transition>
-			<source ref="id9"/>
-			<target ref="id8"/>
+			<source ref="id8"/>
+			<target ref="id7"/>
 			<label kind="synchronisation" x="-340" y="-212">OBU_fail[id_T]?</label>
 		</transition>
 	</template>
@@ -385,25 +367,25 @@ __________   _______________________________________^__
 ___________|||______________________________|______________/
 
 */</declaration>
-		<location id="id10" x="-221" y="-280">
+		<location id="id9" x="-221" y="-280">
 			<name x="-263" y="-306">I_GO</name>
 			<label kind="invariant" x="-297" y="-365">speed&gt;=0 &amp;&amp; ma&gt;=0 &amp;&amp;
 speed'==computeAcceleration() &amp;&amp;
 space'==speed &amp;&amp; c&lt;=freqLU</label>
 		</location>
-		<location id="id11" x="-221" y="-170">
+		<location id="id10" x="-221" y="-170">
 			<name x="-272" y="-195">Failure</name>
 			<label kind="invariant" x="-272" y="-229">space' == 0 &amp;&amp;
 speed' == 0</label>
 		</location>
-		<location id="id12" x="-357" y="-280">
+		<location id="id11" x="-357" y="-280">
 			<name x="-367" y="-314">Init</name>
 			<committed/>
 		</location>
-		<init ref="id12"/>
+		<init ref="id11"/>
 		<transition>
-			<source ref="id10"/>
-			<target ref="id10"/>
+			<source ref="id9"/>
+			<target ref="id9"/>
 			<label kind="guard" x="-136" y="-289">c==freqLU</label>
 			<label kind="synchronisation" x="-136" y="-272">LU_send_location[id_T]!</label>
 			<label kind="assignment" x="-136" y="-255">z=space, c=0</label>
@@ -411,21 +393,21 @@ speed' == 0</label>
 			<nail x="-136" y="-238"/>
 		</transition>
 		<transition>
-			<source ref="id12"/>
-			<target ref="id10"/>
+			<source ref="id11"/>
+			<target ref="id9"/>
 			<label kind="assignment" x="-340" y="-297">initialise()</label>
 		</transition>
 		<transition>
-			<source ref="id10"/>
-			<target ref="id10"/>
+			<source ref="id9"/>
+			<target ref="id9"/>
 			<label kind="synchronisation" x="-297" y="-416">OBU_rec_MA[id_T]?</label>
 			<label kind="assignment" x="-238" y="-399">ma=x</label>
 			<nail x="-247" y="-374"/>
 			<nail x="-187" y="-374"/>
 		</transition>
 		<transition>
-			<source ref="id10"/>
-			<target ref="id11"/>
+			<source ref="id9"/>
+			<target ref="id10"/>
 			<label kind="synchronisation" x="-323" y="-263">OBU_fail[id_T]?</label>
 			<label kind="assignment" x="-340" y="-246">space=0,speed=0</label>
 		</transition>
