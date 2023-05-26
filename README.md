@@ -1,6 +1,6 @@
 # ASTRail
 This repository contains various models of the ERTMS ETCS L3 Moving Block specification (https://en.wikipedia.org/wiki/European_Train_Control_System#Level_3), with increasing level of details,  that stem from the ASTRail project (http://www.astrail.eu/) and the Deliverable 5.1 of X2Rail1 project (https://projects.shift2rail.org/X2RAIL-1), created with Uppaal SMC version 4.1.19 and 4.1.24 (http://www.uppaal.org/). 
-The models and analyses have been published in Isola2018 and FMICS2019.
+The models and analyses have been published in Isola2018, FMICS2019 and STTT2022.
 
 References:
 
